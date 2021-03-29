@@ -5,7 +5,6 @@ from moviepy.editor import *
 
 from math import ceil
 
-#num = "654734732470203"
 # Defining Variables
 AUDIO = AudioFileClip("Testencrypted.mp3")  # Source audio file
 TEMP = "temp_output"  # Temp audio files(deleted when done)
@@ -19,6 +18,7 @@ clips = []  # Array used to scramble clips
 recursive_clip = AUDIO.subclip(0, 0)  # Each recursive_clip will end up as TEMP
 final_clip = AUDIO.subclip(0, 0)  # End up as OUTPUT
 recursion_counter = 0  # Used to count recursions
+value_error = False  # Only written in because i suck at python
 
 
 # Function used to sort 2d array by second entry
@@ -28,6 +28,7 @@ def sortSecond(val):
 
 def sortThird(val):
     return val[2]
+
 
 def printing(message):
     print(f"\nDECRYPTOR #> {message}")
@@ -42,7 +43,6 @@ for i in range(1, int(DURATION * PARTS)):
 print("Before ", clips)
 clips.sort(key=sortSecond)
 print("Scrambled ", clips)
-
 
 for i in range(1, int(DURATION * PARTS)):
     clips[i - 1].append(i / PARTS)
@@ -62,8 +62,16 @@ for i in range(0, TIMES):
             recursive_clip = concatenate_audioclips([recursive_clip, clip])
         except IndexError:
             break
-    part_clip = concatenate_audioclips([recursive_clip])
-    part_clip.write_audiofile(f"{TEMP}{i}.mp3")
+    try:
+        part_clip = concatenate_audioclips([recursive_clip])
+        part_clip.write_audiofile(f"{TEMP}{i}.mp3")
+    except ValueError:
+        value_error = True
+        TIMES -= 1
+        break
+
+if value_error:
+    remove(f"{TEMP}{TIMES}.mp3")
 
 # Compiles all TEMP into OUTPUT clip
 for i in range(TIMES):
